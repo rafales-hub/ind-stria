@@ -33,7 +33,16 @@ class EquipamentoController extends Controller
      */
     public function store(Request $request)
 {
-    dd($request->all());
+    $request->validate([
+            'nome' => 'required|max:255'
+        ]);
+
+        Equipamento::create([
+            'nome' => $request->nome,
+            'ativo' => true
+        ]);
+
+        return redirect()->route('equipamentos.index');
 }
 
     /**
@@ -52,8 +61,9 @@ class EquipamentoController extends Controller
     public function edit(string $id)
     {
         $equipamento = Equipamento::findOrFail($id);
+    $setores = Setor::all();
 
-        return view('equipamentos.edit', compact('equipamento'));
+    return view('equipamentos.edit', compact('equipamento', 'setores'));
     }
 
     /**
