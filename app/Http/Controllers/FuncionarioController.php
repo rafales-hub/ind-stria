@@ -8,17 +8,39 @@ use Illuminate\Http\Request;
 
 class FuncionarioController extends Controller
 {
-   public function index()
+public function index(Request $request)
     {
-    $funcionarios = Funcionario::all();
-    return view('funcionarios.index', compact('funcionarios'));
-    }
+        // Consulta base
+        $funcionarios = Funcionario::where('id', '>', 0);
 
-    public function create()
-    {
+        // Filtro por Nome
+        if ($request->filled('nome')) {
+            $funcionarios = $funcionarios->where('nome', 'like', '%' . $request->nome . '%');
+        }
+
+        if ($request->filled('cargo')) {
+            $funcionarios = $funcionarios->where('cargo', $request->cargo);
+        }
+
+        if ($request->filled('setor_id')) {
+            $funcionarios = $funcionarios->where('setor_id', $request->setor_id);
+        }
+        
+        if ($request->filled('matricula')) {
+            $funcionarios = $funcionarios->where('matricula', 'like', '%' . $request->matricula . '%');
+        }
+
+        // Executa a consulta
+        $funcionarios = $funcionarios->get();
+
+        // 1. Define $setorSelecionado usando find() se o parâmetro existir, senão null
+        $setorSelecionado = $request->filled('setor_id') ? Setor::find($request->setor_id) : null;
+
+        // 2. Busca todos os setores para o <select>
         $setores = Setor::all();
 
-        return view('funcionarios.create', compact('setores'));
+        // 3. Inclua 'setorSelecionado' no compact()
+        return view('funcionarios.index', compact('funcionarios', 'setores', 'setorSelecionado'));
     }
 
     public function store(Request $request)

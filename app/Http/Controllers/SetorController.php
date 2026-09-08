@@ -4,16 +4,30 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Setor;
+use Illuminate\Support\Facades\Auth;
 
 class SetorController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $setores = Setor::all();
-        return view('setores.index',compact('setores'));
+        $setores = Setor::query();
+        if($request->filled('id')){
+            $setores = Setor::where('id', $request->id);
+        }
+
+        if($request->filled('nome')){
+            $setores = Setor::where('nome', 'like', '%' . $request->nome . '%');
+        }
+
+         if($request->filled('status')){
+            $setores = Setor::where('ativo', $request->status);
+        }
+        
+        $setores=$setores->get();
+        return view('setores.index', compact('setores'));
     }
 
     public function criar (){
@@ -30,7 +44,10 @@ class SetorController extends Controller
      */
     public function store(Request $request)
     {
-        Setor::create($request->only('nome'));
+        Setor::create([
+            'nome'=> $request->nome,
+            'criado_por_usuario_id' => Auth::id()
+        ]);
         return redirect()->route('setores.index');
     }
 

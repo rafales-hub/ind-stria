@@ -1,83 +1,90 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@extends('layouts.app')
+@section('title', 'Lista de Funcionários')
+@section('content')
 
-    <title>Funcionários</title>
+<h1>Lista de Funcionários para {{ Auth::user()->name }}</h1>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+<a href="{{ route('funcionarios.create') }}" class="btn btn-success mb-3">
+    Novo Funcionário
+</a>
 
-<body>
+{{-- FORMULÁRIO COM VALORES MANTIDOS APÓS A BUSCA --}}
+<form action="{{ route('funcionarios.index') }}" method="GET" class="mb-4">
+    <div class="row g-2 align-items-end">
+        {{-- Campo Nome --}}
+        <div class="col-md-3">
+            <label for="nome" class="form-label">Nome</label>
+            <input type="text" name="nome" id="nome" class="form-control" value="{{ request('nome') }}">
+        </div>
 
-<div class="container mt-5">
+        {{-- Campo Cargo --}}
+        <div class="col-md-3">
+            <label for="cargo" class="form-label">Cargo</label>
+            <input type="text" name="cargo" id="cargo" class="form-control" value="{{ request('cargo') }}">
+        </div>
 
-    <h1>Funcionários</h1>
+        {{-- Campo Setor (Marca 'selected' se o id for igual ao pesquisado) --}}
+        <div class="col-md-3">
+            <label for="setor_id" class="form-label">Setor</label>
+            <select name="setor_id" id="setor_id" class="form-select">
+                <option value="">Todos os setores</option>
+                @foreach($setores as $setor)
+                    <option value="{{ $setor->id }}" {{ request('setor_id') == $setor->id ? 'selected' : '' }}>
+                        {{ $setor->nome }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
 
-    <a href="{{ route('funcionarios.create') }}"
-       class="btn btn-success mb-3">
-        Novo Funcionário
-    </a>
+        {{-- Campo Matrícula --}}
+        <div class="col-md-2">
+            <label for="matricula" class="form-label">Matrícula</label>
+            <input type="text" name="matricula" id="matricula" class="form-control" value="{{ request('matricula') }}">
+        </div>
 
-    <table class="table table-bordered table-striped">
+        {{-- Botão Filtrar --}}
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+    </div>
+</form>
 
-        <thead>
+{{-- Mensagem do setor selecionado via Setor::find() --}}
+@if($setorSelecionado)
+    <div class="alert alert-info">
+        Exibindo funcionários do setor: <strong>{{ $setorSelecionado->nome }}</strong>
+    </div>
+@endif
+
+{{-- Tabela de Listagem --}}
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Matrícula</th>
+            <th>Cargo</th>
+            <th>Setor</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($funcionarios as $funcionario)
             <tr>
-                <th>Nome</th>
-                <th>Matrícula</th>
-                <th>Cargo</th>
-                <th>Setor</th>
-                <th>Ações</th>
+                <td>{{ $funcionario->nome }}</td>
+                <td>{{ $funcionario->matricula }}</td>
+                <td>{{ $funcionario->cargo }}</td>
+                <td>{{ $funcionario->setor_id }}</td>
+                <td>
+                    <a href="{{ route('funcionarios.edit', $funcionario) }}" class="btn btn-primary btn-sm">Editar</a>
+                    <form action="{{ route('funcionarios.destroy', $funcionario) }}" method="POST" style="display:inline;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                    </form>
+                </td>
             </tr>
-        </thead>
+        @endforeach
+    </tbody>
+</table>
 
-        <tbody>
-
-            @foreach ($funcionarios as $funcionario)
-
-                <tr>
-
-                    <td>{{ $funcionario->nome }}</td>
-
-                    <td>{{ $funcionario->matricula }}</td>
-
-                    <td>{{ $funcionario->cargo }}</td>
-
-                    <td>{{ $funcionario->setor_id }}</td>
-
-                    <td>
-                        <a href="{{ route('funcionarios.edit', $funcionario) }}"class="btn btn-primary btn-sm">Editar</a> 
-    <form
-        action="{{ route('funcionarios.destroy', $funcionario) }}"
-        method="POST"
-        style="display:inline;"
-    >
-
-        @csrf
-        @method('DELETE')
-
-        <button
-            type="submit"
-            class="btn btn-danger btn-sm"
-        >
-            Excluir
-        </button>
-
-    </form>
-
-</td>
-                    </td>
-
-                </tr>
-
-            @endforeach
-
-        </tbody>
-
-    </table>
-
-</div>
-
-</body>
-</html>
+@endsection
